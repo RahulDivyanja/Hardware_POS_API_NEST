@@ -49,7 +49,7 @@ export class AuthService {
     const payload = { sub: user.id, role: user.role };
     Logger.log(`User ${user.email} authenticated successfully`);
     return {
-      access_token: this.jwtservice.sign(payload),
+      access_token: this.jwtservice.sign(payload, { expiresIn: '4h' }),
     };
   }
 }

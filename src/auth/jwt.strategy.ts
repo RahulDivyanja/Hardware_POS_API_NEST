@@ -15,9 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // This method runs after the token is verified
   validate(payload: any) {
-    // The returned object is attached to 'req.user'
     return { userId: payload.sub, role: payload.role };
   }
 }
