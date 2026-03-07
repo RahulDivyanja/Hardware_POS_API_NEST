@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+model User {
+  id          Int      @id      @default(autoincrement()) 
+  name        String 
+  email       String   @unique
+  password    String
+  role        Role     @default(CASHIER)
+}
+
+model Product {
+  id            Int        @id @default(autoincrement())
+  name          String
+  sku           String     @unique
+  price         Float
+  stockQuantity Int        @map("stock_quantity")
+  category      String     // e.g., fasteners, tools, paint [cite: 16]
+  saleItems     SaleItem[]
+}
+
+model Customer {
+  id    Int     @id @default(autoincrement())
+  name  String
+  phone String? // Optional for walk-in sales [cite: 16]
+  sales Sale[]
+}
+
+model Sale {
+  id          Int        @id @default(autoincrement())
+  timestamp   DateTime   @default(now())
+  totalAmount Float      @map("total_amount")
+  cashierName String     @map("cashier_name")
+  customer    Customer?  @relation(fields: [customerId], references: [id])
+  customerId  Int?
+  items       SaleItem[]
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  sale      Sale    @relation(fields: [saleId], references: [id])
+  saleId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  unitPrice Float   @map("unit_price") // Price at the time of sale [cite: 17]
+}
