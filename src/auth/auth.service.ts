@@ -23,33 +23,51 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     Logger.log(`Registering user with email: ${data.email}`);
-    return this.prisma.user.create({
-      data: {
-        ...userData,
-        password: hashedPassword,
-      },
-    });
+
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          ...userData,
+          password: hashedPassword,
+        },
+      });
+      Logger.log(`User registered successfully with email: ${data.email}`);
+      return user;
+    } catch (error) {
+      Logger.error(`Error occurred while registering user: ${error}`);
+      throw new Error('Failed to register user');
+    }
   }
 
-  async login(data: LoginDto) {
+  async login(data: LoginDto): Promise<{ access_token: string }> {
     const user = await validateUser.call(this, data.email, data.password);
-
-    const payload = { sub: user.id, role: user.role };
-    Logger.log(`User ${user.email} authenticated successfully`);
-    return {
-      access_token: this.jwtservice.sign(payload, { expiresIn: '4h' }),
-    };
+    return signIn.call(this, user);
   }
 }
 
-async function validateUser(email: string, password: string) {
+async function validateUser(email: string, password: string): Promise<User> {
   const user = await this.prisma.user.findUnique({ where: { email } });
   if (!user) {
+    Logger.warn(`Authentication failed for email: ${email} - user not found`);
     throw new UnauthorizedException('Invalid credentials');
   }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
+    Logger.warn(`Authentication failed for email: ${email} - invalid password`);
     throw new UnauthorizedException('Invalid credentials');
   }
   return user;
+}
+
+async function signIn(
+  user: User,
+): Promise<{ access_token: string; userName: string; userEmail: string }> {
+  const payload = { sub: user.id, role: user.role };
+  Logger.log(`Signing in user with email: ${user.email}`);
+  const token = await this.jwtservice.signAsync(payload, { expiresIn: '4h' });
+  return {
+    access_token: token,
+    userName: user.name,
+    userEmail: user.email,
+  };
 }
