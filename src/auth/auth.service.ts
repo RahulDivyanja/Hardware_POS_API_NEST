@@ -32,19 +32,7 @@ export class AuthService {
   }
 
   async login(data: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: data.email },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(data.password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    const user = await validateUser.call(this, data.email, data.password);
 
     const payload = { sub: user.id, role: user.role };
     Logger.log(`User ${user.email} authenticated successfully`);
@@ -52,4 +40,16 @@ export class AuthService {
       access_token: this.jwtservice.sign(payload, { expiresIn: '4h' }),
     };
   }
+}
+
+async function validateUser(email: string, password: string) {
+  const user = await this.prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new UnauthorizedException('Invalid credentials');
+  }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new UnauthorizedException('Invalid credentials');
+  }
+  return user;
 }

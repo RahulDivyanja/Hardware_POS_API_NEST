@@ -10,7 +10,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ProductsService } from './products.service';
 import { createProductDto } from './dto/create_product.dto';
@@ -30,7 +36,9 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all products (paginated, filterable by category)' })
+  @ApiOperation({
+    summary: 'Get all products (paginated, filterable by category)',
+  })
   @ApiQuery({ name: 'category', required: false, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
