@@ -10,7 +10,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -45,6 +50,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Current user profile' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @HttpCode(HttpStatus.OK)
   getProfile(@Request() req) {
     return req.user;
   }

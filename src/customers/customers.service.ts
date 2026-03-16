@@ -26,10 +26,14 @@ export class CustomersService {
   //  Get All Customers with pagination
   async getAllCustomers(page = 1, pageSize = 10) {
     const skip = (page - 1) * pageSize;
-    return this.prisma.customer.findMany({
+    const allCoustomers = await this.prisma.customer.findMany({
       skip,
       take: Number(pageSize),
       orderBy: { id: 'desc' },
     });
+    if (allCoustomers.length === 0) {
+      throw new NotFoundException('No customers found');
+    }
+    return allCoustomers;
   }
 }
